@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: ip-pool
+data:
+  config: |
+    address-pools:
+    - name: local-ips
+      protocol: layer2
+      addresses:
+      - <IPs>

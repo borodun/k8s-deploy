@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sonar-postgres-pv
+spec:
+  capacity:
+    storage: 20Gi
+  hostPath:
+    path: /mnt/data/sonar-postgres-pv
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: gitlab
+    name: data-sonarqube-postgresql-0
+  storageClassName: manual

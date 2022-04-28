@@ -1,0 +1,15 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sonarqube
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`<domain-adress>`)
+      kind: Rule
+      services:
+        - name: sonarqube-sonarqube
+          port: 9000
+  tls:
+    certResolver: letsencrypt
