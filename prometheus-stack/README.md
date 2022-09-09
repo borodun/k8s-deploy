@@ -17,7 +17,6 @@ helm upgrade --install prometheus prometheus-community/prometheus -n monitoring 
 
 To monitor your application
 see [scrape guide](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#prometheusioscrape)
-\
 
 To access Grafana create Traefik route:
 

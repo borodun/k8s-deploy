@@ -10,7 +10,7 @@ Some k8s manifests I used for my needs
 - _local-path-provisioner_ for easy storage managing
 - _prometheus-stack_ for monitoring
 
-## Bare-metal k8s ready for working guide
+## Bare-metal Kubernetes for working
 
 1. Install k8s using k0s, see [guide](k0sctl/README.md)
 2. Create local path provisioner, see [guide](local-path-provisioner/README.md)
