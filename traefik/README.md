@@ -22,7 +22,7 @@ least [BasicAuth](https://doc.traefik.io/traefik/middlewares/http/basicauth/#bas
 kubectl apply -f dashboard-route.yaml
 ```
 
-Add PV for certificates
+Add PV for certificates if you don't have storage class
 
 ```shell
 kubectl apply -f traefik-pv.yaml

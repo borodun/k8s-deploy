@@ -14,6 +14,8 @@ deployment:
   kind: Deployment
   # Number of pods of the deployment (only applies when kind == Deployment)
   replicas: 1
+  # Number of old history to retain to allow rollback (If not set, default Kubernetes value is set to 10)
+  # revisionHistoryLimit: 1
   # Amount of time (in seconds) before Kubernetes will send the SIGKILL signal if Traefik does not shut down
   terminationGracePeriodSeconds: 60
   # The minimum number of seconds Traefik needs to be up and running before the DaemonSet/Deployment controller considers it available
@@ -34,12 +36,12 @@ deployment:
     # args: ["-s", "-u", "udp-recv:8125", "unix-sendto:/socket/socket"]
     # volumeMounts:
     #   - name: dsdsocket
-    #     mountPath: /socket
+  #     mountPath: /socket
   # Additional volumes available for use with initContainers and additionalContainers
   additionalVolumes: []
     # - name: dsdsocket
     #   hostPath:
-    #     path: /var/run/statsd-exporter
+  #     path: /var/run/statsd-exporter
   # Additional initContainers (e.g. for setting file permission as shown below)
   initContainers: []
     # The "volume-permissions" init container is required if you run into permission issues.
@@ -49,14 +51,14 @@ deployment:
     #   command: ["sh", "-c", "chmod -Rv 600 /data/*"]
     #   volumeMounts:
     #     - name: data
-    #       mountPath: /data
+  #       mountPath: /data
   # Use process namespace sharing
   shareProcessNamespace: false
   # Custom pod DNS policy. Apply if `hostNetwork: true`
   # dnsPolicy: ClusterFirstWithHostNet
   # Additional imagePullSecrets
   imagePullSecrets: []
-    # - name: myRegistryKeySecretName
+  # - name: myRegistryKeySecretName
 
 # Pod disruption budget
 podDisruptionBudget:
@@ -69,8 +71,8 @@ podDisruptionBudget:
 # Use ingressClass. Ignored if Traefik version < 2.3 / kubernetes < 1.18.x
 ingressClass:
   # true is not unit-testable yet, pending https://github.com/rancher/helm-unittest/pull/12
-  enabled: false
-  isDefaultClass: false
+  enabled: true
+  isDefaultClass: true
   # Use to force a networking.k8s.io API Version for certain CI/CD applications. E.g. "v1beta1"
   fallbackApiVersion: ""
 
@@ -133,10 +135,11 @@ providers:
     enabled: true
     allowCrossNamespace: false
     allowExternalNameServices: false
+    allowEmptyServices: false
     # ingressClass: traefik-internal
     # labelSelector: environment=production,method=traefik
     namespaces: []
-      # - "default"
+    # - "default"
 
   kubernetesIngress:
     enabled: true
@@ -145,7 +148,7 @@ providers:
     # ingressClass: traefik-internal
     # labelSelector: environment=production,method=traefik
     namespaces: []
-      # - "default"
+    # - "default"
     # IP used for Kubernetes Ingress endpoints
     publishedService:
       enabled: false
@@ -173,7 +176,7 @@ volumes: []
 additionalVolumeMounts: []
   # For instance when using a logshipper for access logs
   # - name: traefik-logs
-  #   mountPath: /var/log/traefik
+#   mountPath: /var/log/traefik
 
 # Logs
 # https://docs.traefik.io/observability/logs/
@@ -200,7 +203,7 @@ logs:
     filters: {}
       # statuscodes: "200,300-302"
       # retryattempts: true
-      # minduration: 10ms
+    # minduration: 10ms
     # Fields
     # https://docs.traefik.io/observability/access-logs/#limiting-the-fieldsincluding-headers
     fields:
@@ -208,14 +211,14 @@ logs:
         defaultmode: keep
         names: {}
           # Examples:
-          # ClientUsername: drop
+        # ClientUsername: drop
       headers:
         defaultmode: drop
         names: {}
           # Examples:
           # User-Agent: redact
           # Authorization: drop
-          # Content-Type: keep
+        # Content-Type: keep
 
 metrics:
   # datadog:
@@ -236,7 +239,7 @@ tracing: {}
   #   localAgentHostPort: 127.0.0.1:8126
   #   debug: false
   #   globalTag: ""
-  #   prioritySampling: false
+#   prioritySampling: false
 
 globalArguments:
   - "--global.checknewversion"
@@ -249,7 +252,7 @@ globalArguments:
 ## Use curly braces to pass values: `helm install --set="additionalArguments={--providers.kubernetesingress.ingressclass=traefik-internal,--log.level=DEBUG}"`
 additionalArguments:
   - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-  - --certificatesresolvers.letsencrypt.acme.email=<email>
+  - --certificatesresolvers.letsencrypt.acme.email=<your-email>
   - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
   - --certificatesresolvers.letsencrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory
 #  - "--providers.kubernetesingress.ingressclass=traefik-internal"
@@ -390,12 +393,12 @@ service:
   spec: {}
     # externalTrafficPolicy: Cluster
     # loadBalancerIP: "1.2.3.4"
-    # clusterIP: "2.3.4.5"
+  # clusterIP: "2.3.4.5"
   loadBalancerSourceRanges: []
     # - 192.168.0.1/32
-    # - 172.16.0.0/16
+  # - 172.16.0.0/16
   externalIPs: []
-    # - 1.2.3.4
+  # - 1.2.3.4
   # One of SingleStack, PreferDualStack, or RequireDualStack.
   # ipFamilyPolicy: SingleStack
   # List of IP families (e.g. IPv4 and/or IPv6).
@@ -429,13 +432,34 @@ autoscaling:
 persistence:
   enabled: true
   name: data
-#  existingClaim: ""
+  #  existingClaim: ""
   accessMode: ReadWriteOnce
   size: 128Mi
-  # storageClass: ""
+  storageClass: "local-path"
   path: /data
   annotations: {}
   # subPath: "" # only mount a subpath of the Volume into the pod
+
+certResolvers: {}
+#   letsencrypt:
+#     # for challenge options cf. https://doc.traefik.io/traefik/https/acme/
+#     email: email@example.com
+#     dnsChallenge:
+#       # also add the provider's required configuration under env
+#       # or expand then from secrets/configmaps with envfrom
+#       # cf. https://doc.traefik.io/traefik/https/acme/#providers
+#       provider: digitalocean
+#       # add futher options for the dns challenge as needed
+#       # cf. https://doc.traefik.io/traefik/https/acme/#dnschallenge
+#       delayBeforeCheck: 30
+#       resolvers:
+#         - 1.1.1.1
+#         - 8.8.8.8
+#     tlsChallenge: true
+#     httpChallenge:
+#       entryPoint: "web"
+#     # match the path to persistence
+#     storage: /data/acme.json
 
 # If hostNetwork is true, runs traefik in the host network namespace
 # To prevent unschedulabel pods due to port collisions, if hostNetwork=true
@@ -470,7 +494,7 @@ resources: {}
   #   memory: "50Mi"
   # limits:
   #   cpu: "300m"
-  #   memory: "150Mi"
+#   memory: "150Mi"
 affinity: {}
 # # This example pod anti-affinity forces the scheduler to put traefik pods
 # # on nodes where no other traefik pods are scheduled.

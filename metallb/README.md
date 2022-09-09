@@ -2,8 +2,4 @@
 
 [Installation](https://metallb.org/installation/#installation-by-manifest)
 
-Change _pool.yaml_ according to your needs
-
-```shell
-kubectl apply -f pool.yaml
-```
+[L2 configuration](https://metallb.org/configuration/#layer-2-configuration)
