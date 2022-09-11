@@ -24,4 +24,4 @@ To access Grafana create Traefik route:
 kubectl apply -f grafana-route.yaml
 ```
 
-Password for Grafana _admin_ user is in _prometheus-grafana_ secret.
+Password for Grafana _admin_ user is in _prometheus-grafana_ secret (default: prom-operator).
